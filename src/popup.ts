@@ -13,7 +13,7 @@ import {
 } from './lib/f1';
 import { formatPoints, formatRaceDate, timeAgo } from './lib/format';
 import { getNews, NEWS_SOURCES, type News, type NewsItem } from './lib/news';
-import { teamColor } from './lib/teams';
+import { findTeam, teamColor, TEAMS, textColorOn, type TeamInfo } from './lib/teams';
 
 const MINUTE = 60_000;
 
@@ -28,6 +28,7 @@ interface Resource<T> {
 class DataView<T> {
   updatedAt: number | undefined;
   busy = false;
+  private shown: { data: T } | undefined;
 
   constructor(
     readonly root: HTMLElement,
@@ -63,7 +64,13 @@ class DataView<T> {
     }
   }
 
+  /** Draws the current data again, e.g. after the favorite team changes. */
+  rerender(): void {
+    if (this.shown) this.root.replaceChildren(this.render(this.shown.data));
+  }
+
   private show(data: T, savedAt: number): void {
+    this.shown = { data };
     this.root.replaceChildren(this.render(data));
     this.updatedAt = savedAt;
     this.onStatusChange();
@@ -118,6 +125,7 @@ interface ViewStatus {
   readonly busy: boolean;
   readonly updatedAt: number | undefined;
   refresh(force?: boolean): Promise<void>;
+  rerender(): void;
 }
 const allViews: ViewStatus[] = Object.values(views);
 
@@ -135,8 +143,8 @@ const refreshButton = byId<HTMLButtonElement>('refresh');
 const updatedLabel = byId('updated');
 const attribution = byId('attribution');
 
-let activeTab: TabId = readPref('tab', TABS, 'standings');
-let standingsKind: StandingsKind = readPref('standings', STANDINGS_KINDS, 'drivers');
+let activeTab: TabId = oneOf(readPref('tab'), TABS, 'standings');
+let standingsKind: StandingsKind = oneOf(readPref('standings'), STANDINGS_KINDS, 'drivers');
 
 function selectTab(id: TabId, focus = false): void {
   activeTab = id;
@@ -179,6 +187,82 @@ function updateStatus(): void {
   refreshButton.classList.toggle('is-busy', allViews.some((v) => v.busy));
 }
 
+// ---- Favorite team: onboarding picker and theme ----
+
+// Saved as the team's constructorId, or "none" if the user chose no team.
+// Nothing saved yet means this is the first run, so the picker opens.
+const savedTeam = readPref('team');
+let favoriteTeam: TeamInfo | undefined = findTeam(savedTeam ?? undefined);
+
+const picker = byId('picker');
+const teamGrid = byId('team-grid');
+const pickerCancel = byId<HTMLButtonElement>('picker-cancel');
+const teamButton = byId<HTMLButtonElement>('team-button');
+const teamLabel = byId('team-label');
+const mainParts = [byId('tabs'), scroller, byId('statusbar'), teamButton, refreshButton];
+
+function applyTheme(): void {
+  const root = document.documentElement;
+  const team = favoriteTeam;
+  if (team) {
+    root.dataset.team = team.id;
+    root.style.setProperty('--accent', team.color);
+    root.style.setProperty('--accent-2', team.secondary);
+    root.style.setProperty('--on-accent', textColorOn(team.color));
+  } else {
+    delete root.dataset.team;
+    for (const name of ['--accent', '--accent-2', '--on-accent']) root.style.removeProperty(name);
+  }
+  teamLabel.textContent = team?.name ?? 'Pick team';
+  teamButton.title = team ? `Your team: ${team.name}. Click to change.` : 'Pick your team';
+}
+
+function openPicker(firstRun: boolean): void {
+  teamGrid.replaceChildren(...TEAMS.map(teamOption));
+  pickerCancel.hidden = firstRun;
+  picker.hidden = false;
+  for (const el of mainParts) el.hidden = true;
+  if (!firstRun) teamGrid.querySelector<HTMLElement>('[aria-pressed="true"]')?.focus();
+}
+
+function closePicker(): void {
+  picker.hidden = true;
+  for (const el of mainParts) el.hidden = false;
+  teamButton.focus();
+}
+
+function chooseTeam(team: TeamInfo | undefined): void {
+  favoriteTeam = team;
+  savePref('team', team?.id ?? 'none');
+  applyTheme();
+  for (const view of allViews) view.rerender();
+  closePicker();
+}
+
+function teamOption(team: TeamInfo): HTMLElement {
+  const swatch = h('span', { class: 'swatch', 'aria-hidden': 'true' });
+  swatch.style.setProperty('--c1', team.color);
+  swatch.style.setProperty('--c2', team.secondary);
+  const button = h(
+    'button',
+    { class: 'team-option', type: 'button', 'aria-pressed': String(team.id === favoriteTeam?.id) },
+    swatch,
+    team.name,
+  );
+  button.style.setProperty('--c1', team.color);
+  button.addEventListener('click', () => chooseTeam(team));
+  return button;
+}
+
+teamButton.addEventListener('click', () => openPicker(false));
+byId('no-team').addEventListener('click', () => chooseTeam(undefined));
+pickerCancel.addEventListener('click', closePicker);
+picker.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !pickerCancel.hidden) closePicker();
+});
+
+// ---- Tab and toggle events ----
+
 for (const tab of tabButtons) {
   tab.addEventListener('click', () => selectTab(tab.dataset.tab as TabId));
 }
@@ -206,8 +290,11 @@ refreshButton.addEventListener('click', () => {
   for (const view of allViews) void view.refresh(true);
 });
 
+applyTheme();
 selectTab(activeTab);
 selectStandings(standingsKind);
+if (savedTeam === null) openPicker(true);
+// Data loads behind the picker so it's ready once a team is chosen.
 for (const view of allViews) void view.refresh();
 setInterval(updateStatus, 30_000);
 
@@ -225,7 +312,7 @@ function renderDriverStandings(standings: Standings<DriverStanding>): Node {
       ...standings.entries.map((s) =>
         h(
           'li',
-          { class: 'row' },
+          { class: rowClass('row', s.team?.id) },
           h('span', { class: 'pos' }, s.position),
           teamBar(s.team?.id),
           h('div', { class: 'who' }, driverName(s.driver), h('div', { class: 'sub' }, s.team?.name ?? '')),
@@ -248,7 +335,7 @@ function renderConstructorStandings(standings: Standings<ConstructorStanding>): 
       ...standings.entries.map((s) =>
         h(
           'li',
-          { class: 'row' },
+          { class: rowClass('row', s.team.id) },
           h('span', { class: 'pos' }, s.position),
           teamBar(s.team.id),
           h(
@@ -296,7 +383,7 @@ function renderRace(race: RaceResult | null): Node {
 function resultRow(r: ResultRow): Node {
   return h(
     'li',
-    { class: r.classified ? 'row result-row' : 'row result-row is-out' },
+    { class: rowClass(r.classified ? 'row result-row' : 'row result-row is-out', r.team.id) },
     h('span', { class: 'pos' }, r.position),
     teamBar(r.team.id),
     h(
@@ -355,6 +442,10 @@ function newsItem(item: NewsItem): Node {
 
 // ---- Small building blocks ----
 
+function rowClass(base: string, teamId: string | undefined): string {
+  return teamId !== undefined && teamId === favoriteTeam?.id ? `${base} is-favorite` : base;
+}
+
 function driverName(driver: Driver): Node {
   return h(
     'div',
@@ -405,19 +496,22 @@ function errorState(message: string, retry: () => void): Node {
 
 // ---- Remembered choices (a convenience, so failures are ignored) ----
 
-function readPref<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
+function readPref(key: string): string | null {
   try {
-    const value = localStorage.getItem(`noodle:pref:${key}`);
-    return allowed.find((option) => option === value) ?? fallback;
+    return localStorage.getItem(`noodle:pref:${key}`);
   } catch {
-    return fallback;
+    return null;
   }
+}
+
+function oneOf<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
+  return allowed.find((option) => option === value) ?? fallback;
 }
 
 function savePref(key: string, value: string): void {
   try {
     localStorage.setItem(`noodle:pref:${key}`, value);
   } catch {
-    // Not remembering the tab is fine.
+    // Storage unavailable: the choice just won't be remembered.
   }
 }

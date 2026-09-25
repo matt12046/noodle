@@ -6,6 +6,8 @@ A browser extension for Formula 1 fans. Click the toolbar icon and a panel drops
 - **Results**: the full classification of the latest Grand Prix, with gaps, places gained or lost and the fastest lap
 - **News**: the latest headlines from Formula1.com, BBC Sport and Autosport, newest first
 
+The first time you open it, Noodle asks you to pick your team. The panel then takes on that team's colors and highlights its drivers in the standings and results. Change team any time with the team button in the top bar. The choice is saved in your browser, so there's no account or server involved.
+
 Data refreshes each time you open the panel. It's cached for a few minutes so the panel opens instantly, and the refresh button in the corner fetches everything again. Before the first race of a season, it shows the previous season's final standings and last race.
 
 ## Install it in your browser
@@ -41,7 +43,7 @@ src/popup.html|css|ts  the drop-down panel
 src/lib/f1.ts          standings and results from the Jolpica F1 API
 src/lib/news.ts        news feeds: the list of sources, fetching and RSS/Atom parsing
 src/lib/cache.ts       short-lived cache so the panel opens instantly
-src/lib/teams.ts       team accent colours
+src/lib/teams.ts       the teams on the grid and their colors (used by the team picker and theme)
 ```
 
 ## Data sources

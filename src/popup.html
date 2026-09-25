@@ -10,20 +10,36 @@
     <header class="topbar">
       <div class="brand">
         <svg class="brand-mark" viewBox="0 0 128 128" aria-hidden="true">
-          <rect width="128" height="128" rx="28" fill="#e10600" />
-          <path d="M24 82C38 38 58 38 64 64s26 26 40-18" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" />
+          <rect class="brand-tile" width="128" height="128" rx="28" fill="#e10600" />
+          <path class="brand-line" d="M24 82C38 38 58 38 64 64s26 26 40-18" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" />
         </svg>
         <span class="brand-name">Noodle</span>
         <span class="brand-tag">F1 stats &amp; news</span>
       </div>
-      <button class="icon-button" id="refresh" type="button" title="Refresh" aria-label="Refresh">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </button>
+      <div class="topbar-actions">
+        <button class="team-chip" id="team-button" type="button">
+          <span class="swatch" aria-hidden="true"></span>
+          <span class="team-chip-label" id="team-label">Pick team</span>
+        </button>
+        <button class="icon-button" id="refresh" type="button" title="Refresh" aria-label="Refresh">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
     </header>
 
-    <nav class="tabs" role="tablist" aria-label="Sections">
+    <section class="picker" id="picker" aria-labelledby="picker-title" hidden>
+      <h1 class="picker-title" id="picker-title">Pick your team</h1>
+      <p class="picker-intro">Noodle will switch to your team's colors. You can change this any time from the top bar.</p>
+      <div class="team-grid" id="team-grid"></div>
+      <div class="picker-actions">
+        <button class="text-button" id="no-team" type="button">No favorite team</button>
+        <button class="text-button" id="picker-cancel" type="button">Cancel</button>
+      </div>
+    </section>
+
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
       <button class="tab" role="tab" type="button" id="tab-standings" data-tab="standings" aria-controls="panel-standings">Standings</button>
       <button class="tab" role="tab" type="button" id="tab-results" data-tab="results" aria-controls="panel-results">Results</button>
       <button class="tab" role="tab" type="button" id="tab-news" data-tab="news" aria-controls="panel-news">News</button>
@@ -48,7 +64,7 @@
       </section>
     </main>
 
-    <footer class="statusbar">
+    <footer class="statusbar" id="statusbar">
       <span id="updated"></span>
       <span id="attribution"></span>
     </footer>
