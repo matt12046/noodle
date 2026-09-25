@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Source for public/icons/*.png: a red tile with a white "noodle" racing line. -->
+  <rect width="128" height="128" rx="28" fill="#e10600"/>
+  <path d="M24 82C38 38 58 38 64 64s26 26 40-18" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round"/>
+</svg>

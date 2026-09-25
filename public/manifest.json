@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Noodle – F1 Stats & News",
+  "short_name": "Noodle",
+  "version": "0.1.0",
+  "description": "Formula 1 standings, the latest race results and F1 news, one click from your toolbar.",
+  "action": {
+    "default_title": "Noodle – F1 stats & news",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "host_permissions": [
+    "https://api.jolpi.ca/*",
+    "https://www.formula1.com/*",
+    "https://feeds.bbci.co.uk/*",
+    "https://www.autosport.com/*"
+  ]
+}

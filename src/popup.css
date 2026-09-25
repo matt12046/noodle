@@ -1,0 +1,544 @@
+:root {
+  color-scheme: dark;
+  --bg: #15151e;
+  --surface: #1d1d27;
+  --surface-hover: #252531;
+  --border: #2a2a36;
+  --text: #f4f4f6;
+  --muted: #a1a1ae;
+  --faint: #6f6f7d;
+  --accent: #e10600;
+  --gain: #2fd07a;
+  --loss: #ff6262;
+  --fastest: #b36bff;
+  --skeleton: #22222d;
+  --skeleton-shine: #2c2c39;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f6f6f8;
+    --surface: #ffffff;
+    --surface-hover: #efeff4;
+    --border: #e3e3ea;
+    --text: #15151e;
+    --muted: #5f5f6c;
+    --faint: #8c8c98;
+    --gain: #0c9a52;
+    --loss: #d42b2b;
+    --fastest: #8a2be2;
+    --skeleton: #e9e9ef;
+    --skeleton-shine: #f4f4f8;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+/* Chrome caps extension popups at 800×600. A fixed size stops the popup
+   resizing as data arrives; the main area scrolls instead. */
+body {
+  width: 380px;
+  height: 580px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ---- Top bar ---- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 10px 10px 14px;
+  background: var(--surface);
+  border-top: 3px solid var(--accent);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.brand-tag {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.icon-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.icon-button.is-busy svg {
+  animation: spin 0.9s linear infinite;
+}
+
+/* ---- Tabs ---- */
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  position: relative;
+  padding: 9px 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab[aria-selected='true'] {
+  color: var(--text);
+}
+
+.tab[aria-selected='true']::after {
+  content: '';
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: -1px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--accent);
+}
+
+/* ---- Scrolling area ---- */
+
+main {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.segmented-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 10px 14px 8px;
+  background: var(--bg);
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.segmented button {
+  padding: 5px 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segmented button[aria-pressed='true'] {
+  background: var(--surface-hover);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+}
+
+.meta {
+  margin: 0;
+  padding: 2px 14px 6px;
+  color: var(--faint);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---- Rows (standings and results) ---- */
+
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 26px 4px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rows .row:last-child {
+  border-bottom: 0;
+}
+
+.pos {
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.team-bar {
+  width: 4px;
+  height: 30px;
+  border-radius: 2px;
+  background: var(--team);
+}
+
+.who {
+  min-width: 0;
+}
+
+.name,
+.sub {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.name .first {
+  color: var(--muted);
+}
+
+.name .last,
+.team-name {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.name .last {
+  text-transform: uppercase;
+}
+
+.sub {
+  margin-top: 1px;
+  color: var(--faint);
+  font-size: 11.5px;
+}
+
+.pts {
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pts .unit {
+  margin-left: 3px;
+  color: var(--faint);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* ---- Results ---- */
+
+.race-header {
+  padding: 14px 14px 10px;
+}
+
+.kicker {
+  margin: 0 0 2px;
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.race-name {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.race-meta {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.result-row {
+  grid-template-columns: 26px 4px minmax(0, 1fr) auto 28px;
+}
+
+.col-heads {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  color: var(--faint);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-top: 1px solid var(--border);
+}
+
+.col-heads .pos,
+.col-heads .pts {
+  font-weight: 600;
+}
+
+.gap {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.gap-time {
+  font-size: 12px;
+}
+
+.delta {
+  margin-top: 1px;
+  color: var(--faint);
+  font-size: 10.5px;
+}
+
+.delta.up {
+  color: var(--gain);
+}
+
+.delta.down {
+  color: var(--loss);
+}
+
+.pts.is-zero {
+  color: var(--faint);
+  font-weight: 500;
+}
+
+.is-out .pos,
+.is-out .gap-time {
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.badge-fastest {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--fastest);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 15px;
+  vertical-align: 1px;
+}
+
+/* ---- News ---- */
+
+.news {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+}
+
+.news-item {
+  display: flex;
+  gap: 11px;
+  padding: 9px 14px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.news-item:hover {
+  background: var(--surface-hover);
+}
+
+.thumb {
+  flex: none;
+  width: 84px;
+  height: 56px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--skeleton);
+}
+
+.news-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.headline {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 600;
+  line-height: 1.3;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.news-meta {
+  color: var(--faint);
+  font-size: 11px;
+}
+
+/* ---- Loading, empty, error and notice states ---- */
+
+.skeleton {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+}
+
+.skeleton-row {
+  height: 38px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--skeleton) 25%, var(--skeleton-shine) 50%, var(--skeleton) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+}
+
+.state {
+  padding: 56px 28px;
+  text-align: center;
+}
+
+.state-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.state-detail {
+  margin: 4px 0 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.button {
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:hover {
+  filter: brightness(1.1);
+}
+
+.notice {
+  margin: 8px 14px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  font-size: 12px;
+}
+
+/* ---- Status bar ---- */
+
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--faint);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.statusbar span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-button.is-busy svg,
+  .skeleton-row {
+    animation: none;
+  }
+}

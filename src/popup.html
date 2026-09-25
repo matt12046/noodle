@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Noodle</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 128 128" aria-hidden="true">
+          <rect width="128" height="128" rx="28" fill="#e10600" />
+          <path d="M24 82C38 38 58 38 64 64s26 26 40-18" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" />
+        </svg>
+        <span class="brand-name">Noodle</span>
+        <span class="brand-tag">F1 stats &amp; news</span>
+      </div>
+      <button class="icon-button" id="refresh" type="button" title="Refresh" aria-label="Refresh">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" type="button" id="tab-standings" data-tab="standings" aria-controls="panel-standings">Standings</button>
+      <button class="tab" role="tab" type="button" id="tab-results" data-tab="results" aria-controls="panel-results">Results</button>
+      <button class="tab" role="tab" type="button" id="tab-news" data-tab="news" aria-controls="panel-news">News</button>
+    </nav>
+
+    <main id="scroller">
+      <section class="panel" id="panel-standings" role="tabpanel" aria-labelledby="tab-standings" hidden>
+        <div class="segmented-bar">
+          <div class="segmented" role="group" aria-label="Championship">
+            <button type="button" data-standings="drivers">Drivers</button>
+            <button type="button" data-standings="constructors">Constructors</button>
+          </div>
+        </div>
+        <div id="view-drivers"></div>
+        <div id="view-constructors" hidden></div>
+      </section>
+      <section class="panel" id="panel-results" role="tabpanel" aria-labelledby="tab-results" hidden>
+        <div id="view-results"></div>
+      </section>
+      <section class="panel" id="panel-news" role="tabpanel" aria-labelledby="tab-news" hidden>
+        <div id="view-news"></div>
+      </section>
+    </main>
+
+    <footer class="statusbar">
+      <span id="updated"></span>
+      <span id="attribution"></span>
+    </footer>
+
+    <script type="module" src="./popup.ts"></script>
+  </body>
+</html>
