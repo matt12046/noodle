@@ -88,8 +88,9 @@ describe('toRaceResult', () => {
         Driver: verstappen, Constructor: redBull, Time: { time: '+5.832' }, FastestLap: { rank: '1' },
       },
       {
+        // Current API data gives lapped cars a time too; the gap should still read in laps.
         position: '3', positionText: '3', points: '0', grid: '0', laps: '57', status: 'Lapped',
-        Driver: alonso, Constructor: astonMartin,
+        Driver: alonso, Constructor: astonMartin, Time: { time: '+24.633' },
       },
       {
         position: '4', positionText: '4', points: '0', grid: '2', laps: '56', status: '+2 Laps',

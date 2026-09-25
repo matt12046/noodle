@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import manifest from '../../public/manifest.json';
-import { mergeItems, NEWS_SOURCES, parseFeed } from './news';
+import { mergeItems, parseFeed } from './news';
 
 const source = { name: 'Test Feed', url: 'https://example.com/feed.xml' };
 
@@ -85,6 +84,14 @@ describe('parseFeed', () => {
     ]);
   });
 
+  it('drops images that are not served over https', () => {
+    const feed = `<rss version="2.0"><channel><item><title>Plain http image</title>
+      <link>https://example.com/news/4</link>
+      <enclosure url="http://img.example.com/4.jpg" type="image/jpeg" length="0"/>
+    </item></channel></rss>`;
+    expect(parseFeed(feed, source)[0]?.image).toBeUndefined();
+  });
+
   it('rejects documents that are not XML', () => {
     expect(() => parseFeed('<html><body>Not found', source)).toThrow(/isn't valid XML/);
   });
@@ -98,13 +105,5 @@ describe('mergeItems', () => {
       'a',
       'b',
     ]);
-  });
-});
-
-describe('NEWS_SOURCES', () => {
-  it('only uses hosts the extension has permission to fetch', () => {
-    for (const { url } of NEWS_SOURCES) {
-      expect(manifest.host_permissions).toContain(`https://${new URL(url).host}/*`);
-    }
   });
 });

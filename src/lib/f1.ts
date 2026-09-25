@@ -2,7 +2,7 @@ import { fetchJson } from './http';
 
 // Jolpica F1 is the community-run successor to the Ergast API and serves the
 // same response format. Free, no key; rate limited to 4 req/s and 500 req/hour.
-const API_BASE = 'https://api.jolpi.ca/ergast/f1';
+export const API_BASE = 'https://api.jolpi.ca/ergast/f1';
 
 // ---- API response shapes (only the fields used here; the API sends numbers as strings) ----
 
@@ -258,15 +258,15 @@ export function toRaceResult(race: ApiRace): RaceResult {
 }
 
 function gapText(result: ApiResult, winnerLaps: number, classified: boolean): string {
-  if (result.Time?.time) return result.Time.time;
   const lapsDown = winnerLaps - Number(result.laps);
   // Lapped finishers come through as "+1 Lap" (older data) or "Lapped" / "Finished" (newer data).
+  // Newer data also gives lapped cars a time, but the official classification shows laps down.
   const isLappedFinisher =
     result.status === 'Lapped' || result.status === 'Finished' || /^\+\d+ Laps?$/.test(result.status);
   if (classified && isLappedFinisher && lapsDown > 0) {
     return `+${lapsDown} ${lapsDown === 1 ? 'lap' : 'laps'}`;
   }
-  return result.status;
+  return result.Time?.time ?? result.status;
 }
 
 function toDriver(driver: ApiDriver): Driver {

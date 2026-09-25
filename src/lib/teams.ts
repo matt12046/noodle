@@ -27,6 +27,8 @@ export const TEAMS: readonly TeamInfo[] = [
 // Teams that have left the grid but still show up in last season's data.
 const FORMER_TEAM_COLORS: Record<string, string> = {
   sauber: '#52e252',
+  alfa: '#c92d4b',
+  alphatauri: '#5e8faa',
 };
 
 export function findTeam(id: string | undefined): TeamInfo | undefined {

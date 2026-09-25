@@ -1,6 +1,6 @@
 {
   "name": "noodle",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Browser extension with live Formula 1 standings, race results and news.",
   "type": "module",
@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "vite build --watch --mode development",
     "build": "tsc --noEmit && vite build",
+    "package": "npm test && npm run build && node scripts/package.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"

@@ -29,6 +29,7 @@ You need [Node.js](https://nodejs.org/) 22.12 or newer.
 | --- | --- |
 | `npm run dev` | Rebuilds `dist` whenever a file changes. Reopen the panel to see changes; after editing `public/manifest.json`, click the reload icon on the extension's card in `chrome://extensions`. |
 | `npm run build` | Typechecks, then builds `dist`. |
+| `npm run package` | Tests, builds and zips the extension into `noodle-<version>.zip`, ready to upload to the Chrome Web Store. |
 | `npm test` | Runs the unit tests. |
 | `npm run typecheck` | Typechecks without building. |
 
@@ -44,11 +45,25 @@ src/lib/f1.ts          standings and results from the Jolpica F1 API
 src/lib/news.ts        news feeds: the list of sources, fetching and RSS/Atom parsing
 src/lib/cache.ts       short-lived cache so the panel opens instantly
 src/lib/teams.ts       the teams on the grid and their colors (used by the team picker and theme)
+src/manifest.test.ts   tests that pin down the extension's permissions and security policy
+scripts/package.mjs    builds the store upload zip
+docs/                  Chrome Web Store listing text and images
 ```
 
 ## Data sources
 
 - **Standings and results** come from the [Jolpica F1 API](https://github.com/jolpica/jolpica-f1), the free, community-run successor to the Ergast API. It needs no key. Its rate limits (4 requests a second, 500 an hour) are far above what the panel uses. Results appear a few hours after a race ends. This is not live timing during a session.
-- **News** comes from the sites' public RSS feeds. To add or remove a feed, edit `NEWS_SOURCES` in `src/lib/news.ts` and add the site to `host_permissions` in `public/manifest.json`. A unit test fails if the two don't match.
+- **News** comes from the sites' public RSS feeds. To add or remove a feed, edit `NEWS_SOURCES` in `src/lib/news.ts`, then add the site to `host_permissions` and to `connect-src` in the `content_security_policy`, both in `public/manifest.json`. A unit test fails until they all match.
+
+## Privacy and security
+
+- **No data collection.** Noodle has no accounts, analytics, ads or tracking. Your team choice and a short-lived copy of the latest data are stored only in your browser.
+- **Only what it needs.** It requests no browser permissions. Its only host access is to the three news sites, so it can download their feeds. The stats API allows browsers to read its data directly, so it needs no access at all. Noodle has no content scripts, so it never reads or changes the pages you visit.
+- **Locked down.** Its content security policy only lets it run its own bundled code and only lets it connect to the stats API and the three news sites, so it can't send data anywhere else. Its requests never include your cookies.
+- **Checked by tests.** `src/manifest.test.ts` and `src/lib/http.test.ts` fail if a change adds a permission, lets it connect somewhere new or starts sending cookies.
+
+## Publishing
+
+See [docs/chrome-web-store.md](docs/chrome-web-store.md) for the Chrome Web Store steps and ready-to-paste listing text.
 
 Noodle is an unofficial fan project and isn't associated with Formula 1 or any team.
