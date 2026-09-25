@@ -14,6 +14,9 @@ export async function fetchText(url: string): Promise<string> {
   for (let attempt = 0; ; attempt++) {
     const response = await fetch(url, {
       cache: 'no-cache',
+      // Never send the user's cookies, or say where the request came from.
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     if (response.ok) return response.text();

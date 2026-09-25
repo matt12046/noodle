@@ -1,4 +1,4 @@
-import { readCache, writeCache } from './lib/cache';
+import { readCache, removeCache, writeCache } from './lib/cache';
 import { h } from './lib/dom';
 import {
   getConstructorStandings,
@@ -16,6 +16,9 @@ import { getNews, NEWS_SOURCES, type News, type NewsItem } from './lib/news';
 import { findTeam, teamColor, TEAMS, textColorOn, type TeamInfo } from './lib/teams';
 
 const MINUTE = 60_000;
+// The refresh button won't refetch data younger than this, which keeps
+// repeated clicks well inside the stats API's rate limits.
+const MIN_REFRESH_AGE = 30_000;
 
 interface Resource<T> {
   key: string;
@@ -40,17 +43,17 @@ class DataView<T> {
 
   async refresh(force = false): Promise<void> {
     if (this.busy) return;
-    if (this.updatedAt === undefined) {
-      const cached = readCache<T>(this.resource.key);
-      if (cached) this.show(cached.data, cached.savedAt);
-    }
-    const fresh = this.updatedAt !== undefined && Date.now() - this.updatedAt < this.resource.maxAge;
-    if (fresh && !force) return;
+    if (this.updatedAt === undefined) this.showCached();
+    // A negative age means the clock changed since the data was saved: treat it as stale.
+    const age = this.updatedAt === undefined ? Infinity : Date.now() - this.updatedAt;
+    if (age >= 0 && age < (force ? MIN_REFRESH_AGE : this.resource.maxAge)) return;
     if (this.updatedAt === undefined) this.root.replaceChildren(skeleton());
     this.setBusy(true);
     try {
       const data = await this.resource.load();
-      this.show(data, writeCache(this.resource.key, data));
+      // Render before caching, so data that can't be shown is never saved.
+      this.show(data, Date.now());
+      writeCache(this.resource.key, data);
     } catch (error) {
       console.error(`Noodle: couldn't load ${this.label}`, error);
       if (this.updatedAt !== undefined) {
@@ -66,12 +69,31 @@ class DataView<T> {
 
   /** Draws the current data again, e.g. after the favorite team changes. */
   rerender(): void {
-    if (this.shown) this.root.replaceChildren(this.render(this.shown.data));
+    if (!this.shown) return;
+    try {
+      this.root.replaceChildren(this.render(this.shown.data));
+    } catch (error) {
+      console.error(`Noodle: couldn't redraw ${this.label}`, error);
+    }
   }
 
+  /** Shows saved data, if any. Saved data that can't be shown is deleted so it's fetched fresh. */
+  private showCached(): void {
+    const cached = readCache<T>(this.resource.key);
+    if (!cached) return;
+    try {
+      this.show(cached.data, cached.savedAt);
+    } catch (error) {
+      console.error(`Noodle: discarding unreadable saved ${this.label}`, error);
+      removeCache(this.resource.key);
+    }
+  }
+
+  /** Throws, leaving the view unchanged, if the data can't be rendered. */
   private show(data: T, savedAt: number): void {
+    const content = this.render(data);
+    this.root.replaceChildren(content);
     this.shown = { data };
-    this.root.replaceChildren(this.render(data));
     this.updatedAt = savedAt;
     this.onStatusChange();
   }

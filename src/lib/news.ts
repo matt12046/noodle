@@ -5,8 +5,9 @@ export interface NewsSource {
   url: string;
 }
 
-// To add a feed, list it here and add its host to host_permissions in
-// public/manifest.json (news.test.ts checks the two stay in sync).
+// To add a feed, list it here, then add its site to host_permissions and to
+// connect-src in the content security policy, both in public/manifest.json.
+// src/manifest.test.ts fails until they all match.
 export const NEWS_SOURCES: NewsSource[] = [
   { name: 'Formula1.com', url: 'https://www.formula1.com/en/latest/all.xml' },
   { name: 'BBC Sport', url: 'https://feeds.bbci.co.uk/sport/formula1/rss.xml' },
@@ -98,7 +99,7 @@ function makeItem(
     url,
     source: source.name,
     publishedAt: Number.isNaN(publishedAt) ? undefined : publishedAt,
-    image: webUrl(rawImage, source.url),
+    image: httpsUrl(webUrl(rawImage, source.url)),
   };
 }
 
@@ -132,6 +133,11 @@ function plainText(value: string): string {
     ? (new DOMParser().parseFromString(value, 'text/html').body.textContent ?? '')
     : value;
   return decoded.replace(/\s+/g, ' ').trim();
+}
+
+/** The extension's content security policy only allows images over https. */
+function httpsUrl(url: string | undefined): string | undefined {
+  return url?.startsWith('https:') ? url : undefined;
 }
 
 /** Only http(s) URLs are used, so a feed can't smuggle in javascript: or data: links. */

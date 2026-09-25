@@ -2,8 +2,9 @@
   "manifest_version": 3,
   "name": "Noodle – F1 Stats & News",
   "short_name": "Noodle",
-  "version": "0.1.0",
-  "description": "Formula 1 standings, the latest race results and F1 news, one click from your toolbar.",
+  "version": "1.0.0",
+  "description": "Unofficial Formula 1 standings, latest race results and F1 news, one click from your toolbar.",
+  "minimum_chrome_version": "120",
   "action": {
     "default_title": "Noodle – F1 stats & news",
     "default_popup": "popup.html",
@@ -19,9 +20,11 @@
     "128": "icons/icon-128.png"
   },
   "host_permissions": [
-    "https://api.jolpi.ca/*",
     "https://www.formula1.com/*",
     "https://feeds.bbci.co.uk/*",
     "https://www.autosport.com/*"
-  ]
+  ],
+  "content_security_policy": {
+    "extension_pages": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' https:; connect-src https://api.jolpi.ca https://www.formula1.com https://feeds.bbci.co.uk https://www.autosport.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+  }
 }
